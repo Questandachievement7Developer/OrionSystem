@@ -1,5 +1,7 @@
-# OrionSystem
-An project about Pushhing the computing capabilities to the limit by giving the computer a freedom to process the data and React using Context Based Neural Architechture
+# OctopusAI
+An project about Creating a self aware and sentients AI by pushing current gen Processor memory and all hardware Capabilities to its limit 
+
+## You can call him octoAI
 
 
 This Project is merged with q7OS
