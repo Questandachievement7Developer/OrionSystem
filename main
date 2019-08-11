@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#Hello everyone gutten morgen xd
-set +xv #mute toomany arguments
 #http://bhfsteve.blogspot.com/2014/07/embedding-python-in-bash-scripts.html
 
 bot_engine_main(){
@@ -15,38 +13,15 @@ print(response)
 END
 }
 
-#Colouring Functions
-red(){
-printf '\e[38;5;210m '
-}
-
-yellow(){
-printf '\e[38;5;221m '
-}
-green(){
-printf '\e[38;5;042m '
-}
-blue(){
-printf '\e[38;5;039m '
-}
-
-#color
-
-
 bot_learnseq_engine(){
-for a in ${currdir}/NN/* ; do
-export PYTHON_ARG=${a}
-PYTHON_ARG="$1" python - << END
-import os
+python - << END
 from chatterbot.trainers import ListTrainer
 from chatterbot import ChatBot
 chatbot = ChatBot("TakoAI")
-LearnFILE = os.environ['PYTHON_ARG']
-conversation = (LearnFILE, 'r')
+conversation = ('HistoryStorage', 'r')
 trainer = ListTrainer(chatbot)
 trainer.train(conversation)
 END
-done
 }
 
 
@@ -63,40 +38,14 @@ folderinit(){
 mkdir ${currdir}/extra_modules
 mkdir ${currdir}/memory
 mkdir ${currdir}/logs
-if [ ! -f NNRaw ]; then
-mkdir ${currdir}/NN
-echo a > ${currdir}/NN/NNRaw
+if [ ! -f HistoryStorage ]; then
+echo a > ${currdir}/HistoryStorage
 fi
 }
 
-
-logorender(){
-red
-echo "  ____      __       ___   ____";
-echo " / __ \____/ /____  / _ | /  _/";
-green
-echo "/ /_/ / __/ __/ _ \/ __ |_/ /  ";
-blue
-echo "\____/\__/\__/\___/_/ |_/___/  ";
-echo "                               ";
-
-}
-
-
-###############################MainSENSORYBINARYDECODER###############################
-
-
-
-###############################BASIC AI TEXT INPUT OUTPUT#############################3
-
-
-export USERUI="User > "
-export BOTUI="octo > "
 
 bot_fetch_web_engine(){
-if [ ! -f ${currdir}/memory/webspiderlock ]; then
 sh $0 "${inputtxt}" 
-fi
 }
 
 
@@ -105,55 +54,29 @@ if [ -z $output ] ;then
 output=aaaa
 fi
 while true ; do
-#inputtxt=$(dialog --title "Chat" --inputbox "Please Enter Your Message" 8 40 2>&1 >/dev/tty)
-green
-echo -n "${USERUI}"
-read inputtxt
-#dialog --infobox Processing 5 50
-if [ ! -z ${inputtxt} ] ; then 
-botChatReply &> /dev/null &
-fi
-#dialog --title "OctopusAI" --msgbox "${output}" 5 50
+inputtxt=$(dialog --title "Chat" --inputbox "Please Enter Your Message" 8 40 2>&1 >/dev/tty)
+#echo -n 'You :'
+#read inputtxt
+dialog --infobox Processing 5 50
+echo "${inputtxt}" >> ${currdir}/HistoryStorage
+output=$(bot_engine_main "${inputtxt}") 2>&1 >> ${currdir}/logs/NNlog.log 2>&1 > /dev/null
+bot_learnseq_engine >> ${currdir}/logs/NNlog.log 2>&1
+bot_fetch_web_engine >> ${currdir}/logs/webcrawler.log 2>&1 &
+echo "${output}" >> ${currdir}/HistoryStorage
+dialog --title "OctopusAI" --msgbox "${output}" 5 50
 done
 }
 
-botChatReply(){
-if [ ! -z ${inputtxt} ] ;then 
-echo "${inputtxt}" >> ${currdir}/NN/NNRaw
-output=$(bot_engine_main "${inputtxt}") 2>&1 >> ${currdir}/logs/NNlog.log &> /dev/null
-bot_learnseq_engine &>> ${currdir}/logs/NNlog.log &
-bot_fetch_web_engine &>> ${currdir}/logs/webcrawler.log &
-echo "${output}" >> ${currdir}/NN/NNRaw
-echo ${blank} > /dev/tty
-blue
-echo "${BOTUI} ${output}" > /dev/tty
-echo -n "${USERUI} " > /dev/tty
-fi
-}
 
-
-#################################BASIC IO AI END############################
 dependencies(){
 pacman -S lynx httrack busybox dialog python python-setuptools coreutils --noconfirm --needed
 easy_install pip
 pip install chatterbot_corpus
-pip install conda
-pip install cytoolz
-python -m conda install -y python-dateutil
-python -m conda install -y spacy
-python -m conda install -y pint
-python -m conda install -y pymongo
-python -m conda install -y pyyaml
-python -m conda install -y pytz
-python -m conda install -y mathpase
-python -m conda install -y sqlalchemy
 pip install pyyaml
 pip install sumy
 pip install chatterbot 
 python -c "import nltk; nltk.download('punkt')" 
 }
-
-
 
 #forMemoryModuleLoader
 
@@ -195,16 +118,15 @@ done
 
 
 
-#################################MAIN INIT AI LOGIC##############################
+
 
 
 #start Main Module
 folderinit
-dependencies &> ${currdir}/logs/dependenciesinst.log &
+dependencies > ${currdir}/logs/dependenciesinst.log
 clear
-green
 echo Welcome to a single binary TakoAI
-logorender
+echo the diffrence between the OrionAI is this able to multi thread process
 if [ -z $1 ] ;then
 botmainChat
 fi
@@ -212,7 +134,7 @@ fi
 
 #############################MAIN PROGRAM ENDED ############################################################
 #############################WEB SPIDER PARTITION DO NOT WRAP IT AS FUNCTION####################################
-echo aa > ${currdir}/memory/webspiderlock #lock webspider so it doesnt launch more causes CPU bottleneck
+
 
 MemoryTotal=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
 memdefine=$(( ( $MemoryTotal / 1 ) / 1024 ))
@@ -372,7 +294,7 @@ for i in ${list} ; do
  #firefox -new-tab "file://${i}" 2>&1  &
  sleep 0
 done
-cat "ReinforcedLearning/result_${search}" > ${currdir}/NN/NNRaw
+cat "ReinforcedLearning/result_${search}" > ${currdir}/HistoryStorage
 fi
 sh $0 search
 exit
@@ -518,8 +440,7 @@ done
 sleep 9
 declare -A arr
 shopt -s globstar
-#dialog --title "Webspider" --msgbox "Cleaning files before starting cache" 5 50 &
-rm ${currdir}/memory/webspiderlock #remove webspider lock
+dialog --title "Webspider" --msgbox "Cleaning files before starting cache" 5 50 &
 count=0
 for file in **; do
   [[ -f "$file" ]] || continue
