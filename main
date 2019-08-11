@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#Hello everyone gutten morgen xd
+set +xv #mute toomany arguments
 #http://bhfsteve.blogspot.com/2014/07/embedding-python-in-bash-scripts.html
 
 bot_engine_main(){
@@ -13,15 +15,68 @@ print(response)
 END
 }
 
+#Colouring Functions
+red(){
+printf '\e[38;5;210m '
+}
+
+yellow(){
+printf '\e[38;5;221m '
+}
+green(){
+printf '\e[38;5;042m '
+}
+blue(){
+printf '\e[38;5;039m '
+}
+
+#color
+bot_command_spitter(){
+${output} &>> ${currdir}/logs/botsystemPrompt
+}
+
+killall_bgsvc(){
+processlist=$(cat ${currdir}/memory/bgproc)
+for a in ${processlist}; do
+kill -9 ${a}
+done
+kill -9 ${memmanagerid}
+rm -rf ${currdir}/memory/bgproc
+}
+
+memorymanagement(){
+export MMBADGE="[MemoryManagement]"
+yellow
+echo "$MMBADGE Memory Management Started up" > /dev/tty
+while true ; do
+Usage=$(free | grep Mem | awk '{print $3/$2 * 100.0}')
+Usage=$( printf "%.0f" $(echo ${Usage}))
+echo "Memory Usage $Usage"
+if [ $Usage -gt "90" ] ;then
+ProcessTarget=$(tail -n +2 ${currdir}/memory/bgproc)
+fi
+sleep 0.2
+done
+}
+
 bot_learnseq_engine(){
-python - << END
+for a in ${currdir}/NN/* ; do
+cat ${a}
+echo ${a}
+export PYTHON_ARG=${a}
+PYTHON_ARG="${a}" python - << END
+import os
 from chatterbot.trainers import ListTrainer
 from chatterbot import ChatBot
+
 chatbot = ChatBot("TakoAI")
-conversation = ('HistoryStorage', 'r')
+LearnFILE = os.environ['PYTHON_ARG']
+conversation = (LearnFILE, 'r')
+print(conversation)
 trainer = ListTrainer(chatbot)
 trainer.train(conversation)
 END
+done
 }
 
 
@@ -38,14 +93,69 @@ folderinit(){
 mkdir ${currdir}/extra_modules
 mkdir ${currdir}/memory
 mkdir ${currdir}/logs
-if [ ! -f HistoryStorage ]; then
-echo a > ${currdir}/HistoryStorage
+mkdir ${currdir}/sensedata
+if [ ! -f InteractionReinforcement ]; then
+mkdir ${currdir}/NN
+echo a >> ${currdir}/NN/InteractionReinforcement
 fi
 }
 
 
+logorender(){
+red
+echo "  ____      __       ___   ____";
+echo " / __ \____/ /____  / _ | /  _/";
+green
+echo "/ /_/ / __/ __/ _ \/ __ |_/ /  ";
+blue
+echo "\____/\__/\__/\___/_/ |_/___/  ";
+echo "                               ";
+
+}
+
+#############################BOOT SERVICES CALL #########################################
+
+svcStart(){
+echo Starting customized Daemon and Drivers
+daemonLoad &> ${currdir}/logs/inputbinlogs
+echo $! >> ${currdir}/memory/bgproc
+echo Starting dataInput Translator
+anyInputtoBinary &> ${currdir}/logs/inputbinlogs.log &
+echo $! >> ${currdir}/memory/bgproc
+memorymanagement &> ${currdir}/logs/mmmanage.log &
+memmanagerid=$(echo $!) 
+}
+
+##############################CUSTOM DAEMONS OR DRIVER LOADER#############################
+
+daemonLoad(){
+for i in ${currdir}/extra_modules/* ; do
+echo $i
+bash ${i} &
+echo $! >> ${currdir}/memory/bgproc
+done
+}
+
+
+
+###############################MainSENSORYBINARYDECODER###############################
+
+anyInputtoBinary(){
+for a in ${currdir}/senseData/* ; do
+xxd -ps ${a} > ${currdir}/NN/${a}_raw
+done
+}
+
+###############################BASIC AI TEXT INPUT OUTPUT#############################3
+
+
+export USERUI="User > "
+export BOTUI="octo > "
+
 bot_fetch_web_engine(){
+if [ ! -f ${currdir}/memory/webspiderlock ]; then
 sh $0 "${inputtxt}" 
+fi
 }
 
 
@@ -54,28 +164,67 @@ if [ -z $output ] ;then
 output=aaaa
 fi
 while true ; do
-inputtxt=$(dialog --title "Chat" --inputbox "Please Enter Your Message" 8 40 2>&1 >/dev/tty)
-#echo -n 'You :'
-#read inputtxt
-dialog --infobox Processing 5 50
-echo "${inputtxt}" >> ${currdir}/HistoryStorage
-output=$(bot_engine_main "${inputtxt}") 2>&1 >> ${currdir}/logs/NNlog.log 2>&1 > /dev/null
-bot_learnseq_engine >> ${currdir}/logs/NNlog.log 2>&1
-bot_fetch_web_engine >> ${currdir}/logs/webcrawler.log 2>&1 &
-echo "${output}" >> ${currdir}/HistoryStorage
-dialog --title "OctopusAI" --msgbox "${output}" 5 50
+#inputtxt=$(dialog --title "Chat" --inputbox "Please Enter Your Message" 8 40 2>&1 >/dev/tty)
+green
+echo -n "${USERUI}"
+read inputtxt
+exit_input
+#dialog --infobox Processing 5 50
+if [ ! -z "${inputtxt}" ] ; then 
+botChatReply &> /dev/null &
+echo $! >> ${currdir}/memory/bgproc
+fi
+#dialog --title "OctopusAI" --msgbox "${output}" 5 50
 done
 }
 
+botChatReply(){
+if [ ! -z "${inputtxt}" ] ;then 
+echo "${inputtxt}" >> ${currdir}/NN/InteractionReinforcement
+output=$(bot_engine_main "${inputtxt}") 2>&1 >> ${currdir}/logs/NNlog.log &> /dev/null
+bot_learnseq_engine &>> ${currdir}/logs/NNlog.log &
+echo $! >> ${currdir}/memory/bgproc
+bot_fetch_web_engine &>> ${currdir}/logs/webcrawler.log &
+echo $! >> ${currdir}/memory/bgproc
+echo "${output}" >> ${currdir}/NN/InteractionReinforcement
+if [ ! -z ${output} ] ;then
+echo ${blank} > /dev/tty
+bot_command_spitter
+blue > /dev/tty
+echo "${BOTUI} ${output}" > /dev/tty
+green > /dev/tty
+echo -n "${USERUI} " > /dev/tty
+fi
+fi
+}
 
+
+#################################BASIC IO AI END############################
 dependencies(){
 pacman -S lynx httrack busybox dialog python python-setuptools coreutils --noconfirm --needed
 easy_install pip
 pip install chatterbot_corpus
+pip install conda
+pip install cytoolz
+python -m conda install -y python-dateutil
+python -m conda install -y spacy
+python -m conda install -y pint
+python -m conda install -y pymongo
+python -m conda install -y pyyaml
+python -m conda install -y pytz
+python -m conda install -y mathpase
+python -m conda install -y sqlalchemy
 pip install pyyaml
 pip install sumy
 pip install chatterbot 
 python -c "import nltk; nltk.download('punkt')" 
+}
+
+exit_input(){
+if [ "${inputtxt}" == 'exit' ] ;then
+killall_bgsvc
+exit
+fi
 }
 
 #forMemoryModuleLoader
@@ -118,15 +267,18 @@ done
 
 
 
+#################################MAIN INIT AI LOGIC##############################
 
-
-
+#MAIN
 #start Main Module
 folderinit
-dependencies > ${currdir}/logs/dependenciesinst.log
+dependencies &> ${currdir}/logs/dependenciesinst.log &
+echo $! >> ${currdir}/memory/bgproc
 clear
+green
 echo Welcome to a single binary TakoAI
-echo the diffrence between the OrionAI is this able to multi thread process
+logorender
+svcStart
 if [ -z $1 ] ;then
 botmainChat
 fi
@@ -134,7 +286,7 @@ fi
 
 #############################MAIN PROGRAM ENDED ############################################################
 #############################WEB SPIDER PARTITION DO NOT WRAP IT AS FUNCTION####################################
-
+echo aa > ${currdir}/memory/webspiderlock #lock webspider so it doesnt launch more causes CPU bottleneck
 
 MemoryTotal=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
 memdefine=$(( ( $MemoryTotal / 1 ) / 1024 ))
@@ -294,7 +446,7 @@ for i in ${list} ; do
  #firefox -new-tab "file://${i}" 2>&1  &
  sleep 0
 done
-cat "ReinforcedLearning/result_${search}" > ${currdir}/HistoryStorage
+cat "ReinforcedLearning/result_${search}" >> ${currdir}/NN/InteractionReinforcement
 fi
 sh $0 search
 exit
@@ -440,7 +592,8 @@ done
 sleep 9
 declare -A arr
 shopt -s globstar
-dialog --title "Webspider" --msgbox "Cleaning files before starting cache" 5 50 &
+#dialog --title "Webspider" --msgbox "Cleaning files before starting cache" 5 50 &
+rm ${currdir}/memory/webspiderlock #remove webspider lock
 count=0
 for file in **; do
   [[ -f "$file" ]] || continue
