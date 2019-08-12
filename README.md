@@ -1,5 +1,5 @@
 # OctopusAI
-An project about Creating a self aware and sentients AI by pushing current gen Processor memory and all hardware Capabilities to its limit 
+An project about Creating a simple yet effective multipurpose AI by pushing current gen Processor memory and all hardware Capabilities to its limit 
 
 ## But why it is only a single main File?
 We are trying to make things compact as much as possible while able to expand its functionality and Customizability
