@@ -246,8 +246,11 @@ fi
 #################################BASIC IO AI END############################
 dependencies(){
 set -e
+if [ ! -z $(which pacman) ] ;then
 pacman -S lynx httrack busybox dialog python python-setuptools coreutils --noconfirm --needed
+elif [ ! -z $(which apt-get) ] ;then
 apt-get -y install lynx httrack busybox dialog python3 python3-setuptools
+fi
 easy_install pip
 pip install chatterbot_corpus
 pip install conda
