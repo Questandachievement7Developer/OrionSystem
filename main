@@ -242,7 +242,7 @@ fi
 
 #################################BASIC IO AI END############################
 dependencies(){
-while true ; do
+
 pacman -S lynx httrack busybox dialog python python-setuptools coreutils --noconfirm --needed
 apt-get -y install lynx httrack busybox dialog python3 python3-setuptools
 easy_install pip
@@ -261,7 +261,15 @@ pip install pyyaml
 pip install sumy
 pip install chatterbot 
 python -c "import nltk; nltk.download('punkt')" 
-done
+
+}
+
+dependenciesprep(){
+if [ ! -f $(pwd)/installed ]; then
+dependencies
+else
+dependencies &> ${currdir}/logs/dependenciesinstupdater.log &
+fi
 }
 
 exit_input(){
@@ -317,7 +325,7 @@ done
 #MAIN
 #start Main Module
 folderinit
-dependencies &> ${currdir}/logs/dependenciesinst.log &
+dependenciesprep
 echo $! >> ${currdir}/memory/bgproc
 clear
 green
