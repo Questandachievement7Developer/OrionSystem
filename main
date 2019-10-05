@@ -259,16 +259,16 @@ echo 'python3 -m pip install $1' > /bin/pip
 chmod +x /bin/pip /bin/easy_install
 easy_install pip
 pip install chatterbot_corpus
-pip install conda
+#pip install conda
 pip install cytoolz
-python -m conda install -y python-dateutil
-python -m conda install -y spacy
-python -m conda install -y pint
-python -m conda install -y pymongo
-python -m conda install -y pyyaml
-python -m conda install -y pytz
-python -m conda install -y mathpase
-python -m conda install -y sqlalchemy
+#python -m conda install -y python-dateutil
+#python -m conda install -y spacy
+#python -m conda install -y pint
+##python -m conda install -y pymongo
+#python -m conda install -y pyyaml
+#python -m conda install -y pytz
+#python -m conda install -y mathpase
+#python -m conda install -y sqlalchemy
 pip install pyyaml
 pip install sumy
 pip install chatterbot 
