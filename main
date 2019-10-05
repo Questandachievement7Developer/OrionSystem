@@ -1,5 +1,5 @@
 #!/bin/bash
-#299999
+#299999ggg
 #Hello everyone gutten morgen xd
 set +xv #mute toomany arguments
 #http://bhfsteve.blogspot.com/2014/07/embedding-python-in-bash-scripts.html
@@ -274,7 +274,13 @@ set +e
 
 dependenciesprep(){
 if [ ! -f $(pwd)/installed ]; then
+clear
+echo Folder Initialization
+git reset --hard
+clear
 dependencies
+echo Folder Initialization
+git reset --hard
 else
 dependencies &> ${currdir}/logs/dependenciesinstupdater.log &
 fi
