@@ -8,7 +8,9 @@ set +xv #mute toomany arguments
 export zygotePID=$$
 
 executableupdate(){
-git stash
+
+git pull
+chmod +x $0
 }
 
 killzygote(){
