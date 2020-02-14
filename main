@@ -248,6 +248,13 @@ fi
 #################################BASIC IO AI END############################
 dependencies(){
 set -e
+if [ $(whoami) != "root" ]; then
+
+echo " It seems you are installing this AI for the first time "
+echo " Therefore please run it with root "
+exit
+fi
+
 if [ ! -z $(which pacman) ] ;then
 pacman -S lynx httrack busybox dialog python python-setuptools coreutils --noconfirm --needed
 elif [ ! -z $(which apt-get) ] ;then
@@ -285,6 +292,8 @@ clear
 dependencies
 echo Folder Initialization
 git reset --hard
+echo "a" > $(pwd)/installed
+exit
 else
 dependencies &> ${currdir}/logs/dependenciesinstupdater.log &
 fi
