@@ -276,7 +276,7 @@ python3 -m pip install cytoolz
 #python -m conda install -y pytz
 #python -m conda install -y mathpase
 #python -m conda install -y sqlalchemy
-python3 -m pip install pyyaml==5.1
+#python3 -m pip install pyyaml==5.1
 python3 -m pip install sumy
 python3 -m pip install chatterbot 
 python3 -m pip install chatterbot_corpus
