@@ -265,7 +265,7 @@ echo 'python3 -m easy_install $1' > /bin/easy_install
 echo 'python3 -m pip install $1' > /bin/pip
 chmod +x /bin/pip /bin/easy_install
 easy_install pip
-pip install chatterbot_corpus
+#pip install chatterbot_corpus
 #pip install conda
 pip install cytoolz
 #python -m conda install -y python-dateutil
@@ -279,6 +279,7 @@ pip install cytoolz
 pip install pyyaml
 pip install sumy
 pip install chatterbot 
+pip install chatterbot_corpus
 python3 -c "import nltk; nltk.download('punkt')" 
 set +e
 }
